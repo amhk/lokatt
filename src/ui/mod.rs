@@ -1,16 +1,18 @@
 use crossbeam_channel::Sender;
 use ncurses;
 
+use crate::event::Event;
+
 mod input;
 
 pub use input::input_thread;
 
 pub struct UserInterface {
-    sender: Sender<i32>,
+    sender: Sender<Event>,
 }
 
 impl UserInterface {
-    pub fn new(s: Sender<i32>) -> UserInterface {
+    pub fn new(s: Sender<Event>) -> UserInterface {
         UserInterface { sender: s }
     }
 
@@ -31,7 +33,9 @@ impl UserInterface {
         ncurses::refresh();
 
         if ch == 'q' as i32 {
-            self.sender.send(0).unwrap();
+            self.sender
+                .send(Event::Command("quit".to_string()))
+                .unwrap();
         }
     }
 }

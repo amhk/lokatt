@@ -1,8 +1,10 @@
 use crossbeam_channel::bounded;
 use std::thread;
 
+mod event;
 mod ui;
 
+use crate::event::Event;
 use crate::ui::{input_thread, UserInterface};
 
 fn main() {
@@ -24,8 +26,14 @@ fn main() {
 
     loop {
         match receiver.recv().unwrap() {
-            0 => break,
-            x => ui.on_key(x),
+            Event::Command(cmd) => {
+                if cmd == "quit" {
+                    break;
+                }
+            }
+            Event::KeyCode(ch) => {
+                ui.on_key(ch);
+            }
         }
     }
 

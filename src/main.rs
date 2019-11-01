@@ -1,18 +1,16 @@
-use crossbeam_channel::{bounded, Sender};
-use std::io;
+use crossbeam_channel::bounded;
 use std::thread;
 
-fn input_thread(s: Sender<u32>) {
-    loop {
-        let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer).unwrap();
-        let i = buffer.trim().parse::<u32>().unwrap();
-        s.send(i).unwrap();
-    }
-}
+mod ui;
+
+use crate::ui::{input_thread, UserInterface};
 
 fn main() {
     let (sender, receiver) = bounded(32);
+
+    let s = sender.clone();
+    let ui = UserInterface::new(s);
+    ui.init();
 
     let s = sender.clone();
     thread::Builder::new()
@@ -27,7 +25,9 @@ fn main() {
     loop {
         match receiver.recv().unwrap() {
             0 => break,
-            x => println!("received {}", x),
+            x => ui.on_key(x),
         }
     }
+
+    ui.shutdown();
 }

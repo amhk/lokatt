@@ -1,10 +1,13 @@
 use crossbeam_channel::bounded;
+use std::fs::File;
 use std::thread;
 
 mod event;
+mod reader;
 mod ui;
 
 use crate::event::Event;
+use crate::reader::reader_thread;
 use crate::ui::{input_thread, UserInterface};
 
 fn main() {
@@ -22,6 +25,15 @@ fn main() {
         })
         .unwrap();
 
+    let mut src = File::open("/dev/random").unwrap();
+    let s = sender.clone();
+    thread::Builder::new()
+        .name("reader".to_string())
+        .spawn(move || {
+            reader_thread(s, &mut src);
+        })
+        .unwrap();
+
     drop(sender);
 
     loop {
@@ -33,6 +45,9 @@ fn main() {
             }
             Event::KeyCode(ch) => {
                 ui.on_key(ch);
+            }
+            Event::Logcat(s) => {
+                ui.on_logcat(&s);
             }
         }
     }

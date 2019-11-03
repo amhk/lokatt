@@ -8,17 +8,7 @@ pub fn reader_thread<R>(s: Sender<Event>, src: &mut R)
 where
     R: Read,
 {
-    loop {
-        match parse_logger_entry(src) {
-            Ok(entry) => {
-                s.send(Event::Logcat(format!("{:20} {}", entry.tag, entry.text)))
-                    .unwrap();
-            }
-            Err(e) => {
-                s.send(Event::Logcat(format!("read failed: {:?}", e)))
-                    .unwrap();
-                break;
-            }
-        }
+    while let Ok(entry) = parse_logger_entry(src) {
+        s.send(Event::LoggerEntry(entry)).unwrap();
     }
 }

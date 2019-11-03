@@ -1,7 +1,9 @@
 use byteorder::{LittleEndian, ReadBytesExt};
+use chrono::NaiveDateTime;
 use std::convert::TryFrom;
 use std::io::{Error, ErrorKind, Read};
 use std::mem::size_of;
+use std::rc::Rc;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum LogLevel {
@@ -84,6 +86,17 @@ where
         tag: String::from_utf8_lossy(tag).into_owned(),
         text: String::from_utf8_lossy(text).into_owned(),
     })
+}
+
+#[derive(Debug, Eq, PartialEq)]
+pub struct LogcatEntry {
+    pub pid: i32,
+    pub tid: u32,
+    pub process_name: Option<Rc<String>>,
+    pub timestamp: NaiveDateTime,
+    pub level: LogLevel,
+    pub tag: Rc<String>,
+    pub text: String,
 }
 
 #[cfg(test)]

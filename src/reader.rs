@@ -2,18 +2,23 @@ use crossbeam_channel::Sender;
 use std::io::Read;
 
 use crate::event::Event;
+use crate::logcat::parse_logger_entry;
 
 pub fn reader_thread<R>(s: Sender<Event>, src: &mut R)
 where
     R: Read,
 {
-    let mut buf = vec![0u8; 4];
     loop {
-        src.read_exact(&mut buf).unwrap();
-        s.send(Event::Logcat(format!(
-            "read bytes 0x{:02x} 0x{:02x} 0x{:02x} 0x{:02x}",
-            buf[0], buf[1], buf[2], buf[3]
-        )))
-        .unwrap();
+        match parse_logger_entry(src) {
+            Ok(entry) => {
+                s.send(Event::Logcat(format!("{:20} {}", entry.tag, entry.text)))
+                    .unwrap();
+            }
+            Err(e) => {
+                s.send(Event::Logcat(format!("read failed: {:?}", e)))
+                    .unwrap();
+                break;
+            }
+        }
     }
 }

@@ -1,8 +1,10 @@
 use crossbeam_channel::bounded;
+use std::env;
 use std::fs::File;
 use std::thread;
 
 mod event;
+mod logcat;
 mod reader;
 mod ui;
 
@@ -11,6 +13,7 @@ use crate::reader::reader_thread;
 use crate::ui::{input_thread, UserInterface};
 
 fn main() {
+    let path = env::args_os().nth(1).expect("usage: lokatt <path-to-file>");
     let (sender, receiver) = bounded(32);
 
     let s = sender.clone();
@@ -25,7 +28,7 @@ fn main() {
         })
         .unwrap();
 
-    let mut src = File::open("/dev/random").unwrap();
+    let mut src = File::open(path).unwrap();
     let s = sender.clone();
     thread::Builder::new()
         .name("reader".to_string())

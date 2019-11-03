@@ -2,6 +2,7 @@ use crossbeam_channel::Sender;
 use ncurses;
 
 use crate::event::Event;
+use crate::logcat::LogcatEntry;
 
 mod input;
 
@@ -41,10 +42,14 @@ impl UserInterface {
         }
     }
 
-    pub fn on_logcat(&self, s: &str) {
+    pub fn on_logcat(&self, entry: &LogcatEntry) {
         self.clear_screen_if_needed();
-        ncurses::addstr(s);
-        ncurses::addch('\n' as u32);
+        ncurses::addstr(&format!(
+            "{:?} {:20} {}\n",
+            entry.timestamp,
+            entry.tag,
+            entry.text.trim()
+        ));
         ncurses::refresh();
     }
 

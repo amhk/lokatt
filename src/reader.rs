@@ -3,7 +3,10 @@ use std::io::Read;
 
 use crate::event::Event;
 
-pub fn reader_thread(s: Sender<Event>, src: &mut dyn Read) {
+pub fn reader_thread<R>(s: Sender<Event>, src: &mut R)
+where
+    R: Read,
+{
     let mut buf = vec![0u8; 4];
     loop {
         src.read_exact(&mut buf).unwrap();

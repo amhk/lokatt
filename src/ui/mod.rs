@@ -31,8 +31,8 @@ impl UserInterface {
 
     pub fn on_key(&self, ch: i32) {
         self.clear_screen_if_needed();
-        ncurses::addch(ch as u32);
-        ncurses::addch('\n' as u32);
+        ncurses::addch(ch as ncurses::chtype);
+        ncurses::addch('\n' as ncurses::chtype);
         ncurses::refresh();
 
         if ch == 'q' as i32 {

@@ -5,24 +5,34 @@ use crate::event::Event;
 use crate::logcat::LogcatEntry;
 
 mod input;
+mod window;
+
+use window::Window;
 
 pub use input::input_thread;
 
 pub struct UserInterface {
     sender: Sender<Event>,
+    main_window: Window,
 }
 
 impl UserInterface {
-    pub fn new(s: Sender<Event>) -> UserInterface {
-        UserInterface { sender: s }
-    }
-
-    pub fn init(&self) {
+    pub fn init(s: Sender<Event>) -> UserInterface {
         ncurses::initscr();
         ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
         ncurses::cbreak();
         ncurses::noecho();
         ncurses::refresh();
+
+        let mut maxy = 0;
+        let mut maxx = 0;
+        ncurses::getmaxyx(ncurses::stdscr(), &mut maxy, &mut maxx);
+        let main_window = Window::new(0, 0, maxx, maxy);
+
+        UserInterface {
+            sender: s,
+            main_window,
+        }
     }
 
     pub fn shutdown() {
@@ -30,11 +40,6 @@ impl UserInterface {
     }
 
     pub fn on_key(&self, ch: i32) {
-        self.clear_screen_if_needed();
-        ncurses::addch(ch as ncurses::chtype);
-        ncurses::addch('\n' as ncurses::chtype);
-        ncurses::refresh();
-
         if ch == 'q' as i32 {
             self.sender
                 .send(Event::Command("quit".to_string()))
@@ -43,27 +48,11 @@ impl UserInterface {
     }
 
     pub fn on_logcat(&self, entry: &LogcatEntry) {
-        self.clear_screen_if_needed();
-        ncurses::addstr(&format!(
+        self.main_window.add_str(&format!(
             "{:?} {:20} {}\n",
             entry.timestamp,
             entry.tag,
             entry.text.trim()
         ));
-        ncurses::refresh();
-    }
-
-    fn clear_screen_if_needed(&self) {
-        let mut y = 0;
-        let mut x = 0;
-        ncurses::getyx(ncurses::stdscr(), &mut y, &mut x);
-
-        let mut maxy = 0;
-        let mut maxx = 0;
-        ncurses::getmaxyx(ncurses::stdscr(), &mut maxy, &mut maxx);
-
-        if y > maxy - 2 {
-            ncurses::clear();
-        }
     }
 }

@@ -72,8 +72,7 @@ fn main() {
     let (sender, receiver) = bounded(32);
 
     let s = sender.clone();
-    let ui = UserInterface::new(s);
-    ui.init();
+    let ui = UserInterface::init(s);
 
     let s = sender.clone();
     thread::Builder::new()

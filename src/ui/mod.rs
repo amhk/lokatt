@@ -25,7 +25,7 @@ impl UserInterface {
         ncurses::refresh();
     }
 
-    pub fn shutdown(&self) {
+    pub fn shutdown() {
         ncurses::endwin();
     }
 

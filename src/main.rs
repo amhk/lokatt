@@ -3,6 +3,7 @@ use crossbeam_channel::bounded;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::File;
+use std::panic;
 use std::rc::Rc;
 use std::thread;
 
@@ -57,6 +58,17 @@ impl Context {
 
 fn main() {
     let path = env::args_os().nth(1).expect("usage: lokatt <path-to-file>");
+
+    panic::set_hook(Box::new(|panic_info| {
+        UserInterface::shutdown();
+
+        match panic_info.location() {
+            Some(l) => eprintln!("{}:{}: panic:", l.file(), l.line()),
+            None => eprintln!("panic:"),
+        }
+        eprintln!("{:#?}", panic_info);
+    }));
+
     let (sender, receiver) = bounded(32);
 
     let s = sender.clone();
@@ -100,5 +112,5 @@ fn main() {
         }
     }
 
-    ui.shutdown();
+    UserInterface::shutdown();
 }

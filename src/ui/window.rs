@@ -11,12 +11,12 @@ impl Window {
         Window { handle }
     }
 
-    pub fn refresh(&self) {
-        ncurses::wrefresh(self.handle);
-    }
-
     pub fn add_str(&self, s: &str) {
         ncurses::waddstr(self.handle, s);
-        self.refresh();
+        self.mark_dirty();
+    }
+
+    fn mark_dirty(&self) {
+        ncurses::wnoutrefresh(self.handle);
     }
 }

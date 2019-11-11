@@ -108,6 +108,9 @@ fn main() {
                 let logcat = ctx.on_logger_entry(le);
                 ui.on_logcat(logcat);
             }
+            Event::Refresh => {
+                ui.on_refresh();
+            }
         }
     }
 

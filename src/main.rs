@@ -1,3 +1,4 @@
+use backtrace::Backtrace;
 use chrono::NaiveDateTime;
 use crossbeam_channel::bounded;
 use std::collections::{HashMap, HashSet};
@@ -62,11 +63,12 @@ fn main() {
     panic::set_hook(Box::new(|panic_info| {
         UserInterface::shutdown();
 
+        let bt = Backtrace::new();
         match panic_info.location() {
             Some(l) => eprintln!("{}:{}: panic:", l.file(), l.line()),
             None => eprintln!("panic:"),
         }
-        eprintln!("{:#?}", panic_info);
+        eprintln!("{:#?}\n{:#?}", panic_info, bt);
     }));
 
     let (sender, receiver) = bounded(32);
